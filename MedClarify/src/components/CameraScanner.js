@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Button, IconButton, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScanOverlay from './ScanOverlay';
 
 /**
@@ -12,6 +13,7 @@ const CameraScanner = ({ onCapture, onClose }) => {
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [isAligned, setIsAligned] = useState(false);
   const cameraRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   if (!permission) {
     return (
@@ -64,7 +66,7 @@ const CameraScanner = ({ onCapture, onClose }) => {
       <ScanOverlay isAligned={isAligned} />
 
       {/* Top controls - positioned absolutely on top of camera */}
-      <View style={styles.topControls}>
+      <View style={[styles.topControls, { top: insets.top + 10 }]}>
         <IconButton
           icon="close"
           iconColor="#FFFFFF"
@@ -83,7 +85,7 @@ const CameraScanner = ({ onCapture, onClose }) => {
       </View>
 
       {/* Bottom capture button - positioned absolutely on top of camera */}
-      <View style={styles.bottomControls}>
+      <View style={[styles.bottomControls, { bottom: insets.bottom + 40 }]}>
         <TouchableOpacity onPress={handleCapture} style={styles.captureButton}>
           <View style={styles.captureButtonInner} />
         </TouchableOpacity>
@@ -117,25 +119,25 @@ const styles = StyleSheet.create({
   },
   topControls: {
     position: 'absolute',
-    top: 40,
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+    zIndex: 10,
   },
   closeButton: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   flashButton: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   bottomControls: {
     position: 'absolute',
-    bottom: 40,
     left: 0,
     right: 0,
     alignItems: 'center',
+    zIndex: 10,
   },
   captureButton: {
     width: 80,

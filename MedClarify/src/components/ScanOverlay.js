@@ -1,20 +1,24 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 /**
  * Camera overlay with document frame and guidance
- * Shows a rectangle frame with animated breathing effect
+ * Shows a full-width document-shaped rectangle frame
  */
 const ScanOverlay = ({ isAligned = false }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     // Breathing animation
     Animated.loop(
       Animated.sequence([
         Animated.timing(scaleAnim, {
-          toValue: 1.02,
+          toValue: 1.01,
           duration: 1500,
           useNativeDriver: true,
         }),
@@ -31,35 +35,25 @@ const ScanOverlay = ({ isAligned = false }) => {
 
   return (
     <View style={styles.overlay}>
-      {/* Top dark area */}
-      <View style={styles.darkArea} />
+      {/* Document frame - full width */}
+      <Animated.View
+        style={[
+          styles.frameContainer,
+          {
+            transform: [{ scale: scaleAnim }],
+            borderColor: frameColor,
+          },
+        ]}
+      >
+        {/* Corner accents */}
+        <View style={[styles.cornerTopLeft, { borderColor: frameColor }]} />
+        <View style={[styles.cornerTopRight, { borderColor: frameColor }]} />
+        <View style={[styles.cornerBottomLeft, { borderColor: frameColor }]} />
+        <View style={[styles.cornerBottomRight, { borderColor: frameColor }]} />
+      </Animated.View>
 
-      {/* Middle row with frame */}
-      <View style={styles.middleRow}>
-        <View style={styles.darkArea} />
-
-        {/* Document frame */}
-        <Animated.View
-          style={[
-            styles.frameContainer,
-            {
-              transform: [{ scale: scaleAnim }],
-              borderColor: frameColor,
-            },
-          ]}
-        >
-          {/* Corner accents */}
-          <View style={[styles.cornerTopLeft, { borderColor: frameColor }]} />
-          <View style={[styles.cornerTopRight, { borderColor: frameColor }]} />
-          <View style={[styles.cornerBottomLeft, { borderColor: frameColor }]} />
-          <View style={[styles.cornerBottomRight, { borderColor: frameColor }]} />
-        </Animated.View>
-
-        <View style={styles.darkArea} />
-      </View>
-
-      {/* Bottom dark area with text */}
-      <View style={styles.darkAreaBottom}>
+      {/* Guidance text at bottom */}
+      <View style={[styles.textContainer, { bottom: insets.bottom + 140 }]}>
         <Text style={styles.guidanceText}>
           {isAligned
             ? 'Document detected - Hold steady'
@@ -74,74 +68,72 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
-  },
-  darkArea: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  darkAreaBottom: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  middleRow: {
-    flexDirection: 'row',
-    height: 300,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   frameContainer: {
-    width: 280,
-    height: 300,
-    borderWidth: 2,
-    borderRadius: 12,
+    width: SCREEN_WIDTH - 40, // Full width with 20px margin on each side
+    height: SCREEN_HEIGHT * 0.7, // 70% of screen height for document shape
+    borderWidth: 3,
+    borderRadius: 8,
     position: 'relative',
+    backgroundColor: 'transparent',
   },
   cornerTopLeft: {
     position: 'absolute',
-    top: -2,
-    left: -2,
-    width: 30,
-    height: 30,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-    borderTopLeftRadius: 12,
+    top: -3,
+    left: -3,
+    width: 40,
+    height: 40,
+    borderTopWidth: 5,
+    borderLeftWidth: 5,
+    borderTopLeftRadius: 8,
   },
   cornerTopRight: {
     position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 30,
-    height: 30,
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-    borderTopRightRadius: 12,
+    top: -3,
+    right: -3,
+    width: 40,
+    height: 40,
+    borderTopWidth: 5,
+    borderRightWidth: 5,
+    borderTopRightRadius: 8,
   },
   cornerBottomLeft: {
     position: 'absolute',
-    bottom: -2,
-    left: -2,
-    width: 30,
-    height: 30,
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-    borderBottomLeftRadius: 12,
+    bottom: -3,
+    left: -3,
+    width: 40,
+    height: 40,
+    borderBottomWidth: 5,
+    borderLeftWidth: 5,
+    borderBottomLeftRadius: 8,
   },
   cornerBottomRight: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 30,
-    height: 30,
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-    borderBottomRightRadius: 12,
+    bottom: -3,
+    right: -3,
+    width: 40,
+    height: 40,
+    borderBottomWidth: 5,
+    borderRightWidth: 5,
+    borderBottomRightRadius: 8,
+  },
+  textContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
   },
   guidanceText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     textAlign: 'center',
-    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
   },
 });
 
