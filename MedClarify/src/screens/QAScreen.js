@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { TextInput, Button, Text, Card, ActivityIndicator } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { askQuestion } from '../services/claudeAPI';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
@@ -80,12 +81,12 @@ const QAScreen = ({ route }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={100}
-    >
-      <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
         {/* Disclaimer banner */}
         <DisclaimerBanner />
 
@@ -164,21 +165,25 @@ const QAScreen = ({ route }) => {
             This is not medical advice - always consult your healthcare provider
           </Text>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F5F7FA',
+  },
+  flex: {
+    flex: 1,
   },
   messagesContainer: {
     flex: 1,
   },
   messagesContent: {
     padding: 16,
+    paddingBottom: 8,
   },
   messageContainer: {
     marginBottom: 12,
@@ -191,13 +196,16 @@ const styles = StyleSheet.create({
   },
   messageBubble: {
     maxWidth: '80%',
-    elevation: 1,
+    elevation: 2,
+    borderRadius: 16,
   },
   userBubble: {
     backgroundColor: '#2196F3',
+    borderBottomRightRadius: 4,
   },
   assistantBubble: {
     backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 4,
   },
   userText: {
     color: '#FFFFFF',

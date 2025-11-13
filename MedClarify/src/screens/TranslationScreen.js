@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Card, Button, Chip, Divider } from 'react-native-paper';
+import { StyleSheet, ScrollView, View } from 'react-native';
+import { Text, Card, Button, Divider } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import TranslationCard from '../components/TranslationCard';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
@@ -17,8 +18,11 @@ const TranslationScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Disclaimer banner */}
         <DisclaimerBanner />
 
@@ -106,37 +110,27 @@ const TranslationScreen = ({ navigation, route }) => {
           style={styles.askButton}
           contentStyle={styles.askButtonContent}
         >
-          Ask Clarification Questions
+          Ask Questions About This Document
         </Button>
-
-        {/* Bottom Disclaimer */}
-        <Card style={styles.bottomNotice}>
-          <Card.Content>
-            <Text variant="bodySmall" style={styles.bottomNoticeText}>
-              This translation is AI-generated and meant to help you understand your medical
-              documents. It is not a substitute for professional medical advice, diagnosis, or
-              treatment. Always seek the advice of your physician or other qualified health provider
-              with any questions you may have regarding a medical condition.
-            </Text>
-          </Card.Content>
-        </Card>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F5F7FA',
   },
   scrollContent: {
+    padding: 16,
     paddingBottom: 32,
   },
   headerCard: {
-    marginHorizontal: 16,
-    marginVertical: 8,
+    marginBottom: 12,
     backgroundColor: '#E3F2FD',
+    borderRadius: 12,
+    elevation: 2,
   },
   headerLabel: {
     color: '#666',
@@ -147,9 +141,10 @@ const styles = StyleSheet.create({
     color: '#2196F3',
   },
   summaryCard: {
-    marginHorizontal: 16,
-    marginVertical: 8,
-    backgroundColor: '#F5F5F5',
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    elevation: 2,
   },
   sectionTitle: {
     fontWeight: 'bold',
@@ -157,13 +152,15 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     lineHeight: 24,
+    color: '#333',
   },
   actionItemsCard: {
-    marginHorizontal: 16,
-    marginVertical: 8,
+    marginBottom: 12,
     backgroundColor: '#E8F5E9',
     borderLeftWidth: 4,
     borderLeftColor: '#4CAF50',
+    borderRadius: 12,
+    elevation: 2,
   },
   actionItem: {
     flexDirection: 'row',
@@ -179,11 +176,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   uncertaintiesCard: {
-    marginHorizontal: 16,
-    marginVertical: 8,
+    marginBottom: 12,
     backgroundColor: '#FFF3E0',
     borderLeftWidth: 4,
     borderLeftColor: '#FFC107',
+    borderRadius: 12,
+    elevation: 2,
   },
   uncertaintiesTitle: {
     fontWeight: 'bold',
@@ -205,28 +203,18 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 16,
-    marginHorizontal: 16,
   },
   sectionsHeader: {
     fontWeight: 'bold',
-    marginHorizontal: 16,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   askButton: {
-    marginHorizontal: 16,
-    marginVertical: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    borderRadius: 8,
   },
   askButtonContent: {
     paddingVertical: 8,
-  },
-  bottomNotice: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    backgroundColor: '#FFF3E0',
-  },
-  bottomNoticeText: {
-    lineHeight: 18,
-    color: '#666',
   },
 });
 

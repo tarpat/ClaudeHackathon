@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Button, Text, ActivityIndicator, Portal, Dialog } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import CameraScanner from '../components/CameraScanner';
 import DocumentUploader from '../components/DocumentUploader';
 import { processDocument } from '../services/documentProcessor';
@@ -92,7 +93,7 @@ const CameraScanScreen = ({ navigation, route }) => {
   // Show upload interface
   if (mode === 'upload' && !capturedImage) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <DocumentUploader
           onDocumentSelected={handleDocumentSelected}
           onError={handleError}
@@ -116,14 +117,14 @@ const CameraScanScreen = ({ navigation, route }) => {
             </Dialog.Actions>
           </Dialog>
         </Portal>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // Show preview with retake/use options
   if (capturedImage && !processing) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <Image source={{ uri: capturedImage.uri }} style={styles.preview} resizeMode="contain" />
 
         <View style={styles.previewActions}>
@@ -146,20 +147,20 @@ const CameraScanScreen = ({ navigation, route }) => {
             </Dialog.Actions>
           </Dialog>
         </Portal>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // Show processing overlay
   if (processing) {
     return (
-      <View style={styles.processingContainer}>
+      <SafeAreaView style={styles.processingContainer} edges={['top', 'bottom']}>
         <ActivityIndicator size="large" color="#2196F3" />
         <Text style={styles.processingText}>Analyzing document...</Text>
         <Text style={styles.processingSubtext}>
           This may take a few moments. We're extracting text and translating medical terminology.
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -169,7 +170,7 @@ const CameraScanScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F7FA',
   },
   preview: {
     flex: 1,
@@ -178,40 +179,43 @@ const styles = StyleSheet.create({
   previewActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 16,
+    padding: 20,
+    gap: 12,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
   },
   actionButton: {
     flex: 1,
-    marginHorizontal: 8,
+    borderRadius: 8,
   },
   processingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F7FA',
   },
   processingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(245, 247, 250, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1000,
   },
   processingText: {
-    marginTop: 16,
+    marginTop: 20,
     fontSize: 18,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#2196F3',
   },
   processingSubtext: {
-    marginTop: 8,
+    marginTop: 12,
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
     paddingHorizontal: 32,
+    lineHeight: 20,
   },
 });
 

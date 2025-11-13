@@ -121,8 +121,9 @@ const TranslationCard = ({ section }) => {
 const styles = StyleSheet.create({
   card: {
     marginVertical: 8,
-    marginHorizontal: 16,
-    elevation: 2,
+    elevation: 3,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',

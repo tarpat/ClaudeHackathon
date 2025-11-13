@@ -45,18 +45,17 @@ export const cropImage = async (uri, cropData) => {
 };
 
 /**
- * Enhances image contrast and brightness for better OCR
+ * Enhances image for better OCR while maintaining aspect ratio
  * @param {string} uri - The image URI
  * @returns {Promise<string>} URI of the enhanced image
  */
 export const enhanceImage = async (uri) => {
   try {
-    // Resize if needed and enhance contrast
+    // Resize to max width while preserving aspect ratio
     const manipResult = await ImageManipulator.manipulateAsync(
       uri,
       [
-        // Add slight sharpening effect by adjusting
-        { resize: { width: 2000 } }, // Resize to reasonable size
+        { resize: { width: 2000 } }, // Resize width, height auto-scales to maintain aspect ratio
       ],
       { compress: 0.9, format: ImageManipulator.SaveFormat.JPEG }
     );
