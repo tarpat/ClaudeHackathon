@@ -1,0 +1,267 @@
+Create a React Native (Expo) mobile app called "MedClarify" that helps patients understand medical documents by scanning them with their camera or uploading files.
+
+CORE FUNCTIONALITY:
+1. Scan medical documents using device camera (real-time document capture)
+2. Upload medical documents (PDF or photo from gallery)
+3. Extract text from scanned/uploaded documents
+4. Use Claude API to translate medical jargon into plain language
+5. Use Claude API to answer clarification questions about the document
+6. Block requests for additional medical advice with guardrails
+
+TECHNICAL REQUIREMENTS:
+- Use Expo SDK 51
+- React Native Paper for UI components
+- expo-camera for real-time document scanning
+- expo-document-picker for PDF uploads
+- expo-image-picker for gallery photo uploads
+- expo-image-manipulator for image processing (crop, enhance)
+- Direct Claude API integration (Anthropic API)
+- Use claude-sonnet-4-20250514 model
+
+PROJECT STRUCTURE:
+MedClarify/
+├── App.js
+├── src/
+│   ├── screens/
+│   │   ├── HomeScreen.js (main menu - scan or upload)
+│   │   ├── CameraScanScreen.js (live camera scanning)
+│   │   ├── TranslationScreen.js (show simplified version)
+│   │   └── QAScreen.js (ask clarification questions)
+│   ├── components/
+│   │   ├── DocumentUploader.js (file picker)
+│   │   ├── CameraScanner.js (camera with document detection overlay)
+│   │   ├── TranslationCard.js (side-by-side view)
+│   │   ├── ConfidenceIndicator.js (trust indicator)
+│   │   ├── DisclaimerBanner.js (persistent warning)
+│   │   └── ScanOverlay.js (document frame overlay for camera)
+│   ├── services/
+│   │   ├── claudeAPI.js (all Claude API calls)
+│   │   └── documentProcessor.js (text extraction, image enhancement)
+│   └── utils/
+│       ├── prompts.js (system prompts)
+│       └── imageUtils.js (crop, enhance, convert to base64)
+
+KEY FEATURES:
+
+1. Home Screen:
+   - Two primary options:
+     * "Scan Document" button (camera icon) → Opens camera
+     * "Upload from Files" button (folder icon) → Opens file picker
+   - Recent documents list (optional)
+   - Prominent disclaimer at top
+
+2. Camera Scanning:
+   - Full-screen camera view with expo-camera
+   - Document detection overlay (rectangle frame showing where to position document)
+   - Auto-capture when document is detected (or manual capture button)
+   - Flash toggle for low-light conditions
+   - After capture: crop/enhance interface
+   - "Retake" and "Use This Photo" buttons
+   - Send processed image to Claude API for text extraction and translation
+
+3. File Upload:
+   - Support PDF files (expo-document-picker)
+   - Support images from gallery (expo-image-picker)
+   - Preview uploaded file before processing
+   - Extract text and send to Claude API
+
+4. Translation Screen:
+   - Display original text (scrollable, top half)
+   - Display simplified version (scrollable, bottom half)
+   - Show confidence score for each section (0-100) with color-coded progress bars
+   - Highlight medical terms with inline tap-to-see definitions
+   - Display persistent "This is not medical advice - consult your doctor" banner
+   - Action items section (e.g., "Follow up in 2 weeks")
+   - "Ask Questions" button → Navigate to Q&A screen
+
+5. Q&A Chat (Clarification Questions):
+   - Chat interface with message bubbles
+   - User can ask clarification questions about document content
+   - Claude API responds ONLY based on document content (no additional medical advice)
+   - Implement guardrails:
+     * Questions like "Should I take this medication?" → "I can only explain what's in your document. Please consult your doctor for medical advice."
+     * Questions about info not in document → "That information is not in this document. Please ask your healthcare provider."
+   - Show "Claude is thinking..." loading state
+   - Display conversation history
+   - Persistent disclaimer at bottom: "This is not medical advice"
+
+6. Trust & Safety:
+   - Confidence indicators throughout (visual progress bars: green=high, yellow=medium, red=low)
+   - Clear disclaimers on every screen
+   - Handle Claude API errors gracefully with user-friendly messages
+   - Show when Claude is uncertain (display confidence scores)
+   - Privacy: process locally, option to delete documents after session
+   - "Report Issue" button for feedback
+
+CLAUDE API INTEGRATION:
+
+Translation System Prompt:
+"You are a medical document translator helping patients understand their medical records.
+
+CRITICAL RULES:
+1. Translate medical jargon into plain, everyday language
+2. Maintain 100% accuracy - do not oversimplify important clinical details
+3. Highlight any urgent findings or required action items
+4. Provide a confidence score (0-100) for each section based on clarity of the original text
+5. DO NOT provide additional medical advice beyond what's in the document
+6. If something is unclear or ambiguous, explicitly state: 'This section is unclear - please ask your doctor to clarify'
+7. Identify the document type (Lab Results, Discharge Summary, Diagnosis, Prescription, etc.)
+
+FORMAT YOUR RESPONSE AS VALID JSON:
+{
+  \"documentType\": \"Lab Results | Discharge Summary | Diagnosis | Prescription | Imaging Report | etc\",
+  \"simplifiedSections\": [
+    {
+      \"title\": \"Section name (e.g., 'Blood Test Results', 'Diagnosis')\",
+      \"original\": \"Original medical text\",
+      \"simplified\": \"Plain language explanation\",
+      \"confidence\": 85,
+      \"urgency\": \"normal | important | urgent\",
+      \"keyTerms\": [
+        {\"term\": \"medical term\", \"definition\": \"simple definition\"}
+      ]
+    }
+  ],
+  \"actionItems\": [
+    \"Follow up with cardiologist in 2 weeks\",
+    \"Schedule MRI within 30 days\"
+  ],
+  \"overallSummary\": \"One-paragraph summary in plain language\",
+  \"uncertainties\": [
+    \"Section about X is unclear due to abbreviation - ask your doctor\"
+  ]
+}
+
+If processing an image, first extract all visible text, then translate it."
+
+Q&A System Prompt:
+"You are answering clarification questions about a patient's medical document.
+
+STRICT GUARDRAILS:
+1. ONLY answer questions using information explicitly stated in the document
+2. DO NOT provide additional medical advice, recommendations, or interpretations beyond the document
+3. DO NOT answer 'what should I do?' questions - redirect to healthcare provider
+4. If asked for medical advice, respond exactly: 'I can only explain what's in your document. Please consult your doctor for medical advice about your specific situation.'
+5. If information is not in the document, respond: 'That specific information is not mentioned in this document. Please ask your healthcare provider.'
+6. Never diagnose, suggest treatments, or interpret test results beyond what's written
+7. Always encourage consulting with healthcare providers for medical decisions
+
+DOCUMENT CONTENT:
+{documentContext}
+
+PREVIOUS CONVERSATION:
+{conversationHistory}
+
+USER QUESTION: {userQuestion}
+
+Provide a clear, helpful answer that explains what's in the document without adding medical advice."
+
+API Implementation (claudeAPI.js):
+- Endpoint: https://api.anthropic.com/v1/messages
+- Model: claude-sonnet-4-20250514
+- Max tokens: 4096
+- Handle both text and image inputs
+- For images: send as base64 with media_type: "image/jpeg"
+- Implement proper error handling and retry logic
+- Store API key in environment variable
+
+CAMERA IMPLEMENTATION:
+
+CameraScanScreen.js requirements:
+- Request camera permissions on mount with clear explanation
+- Use expo-camera CameraView component
+- Display document frame overlay (rectangle with corners highlighted)
+- Show guidance text: "Position document within frame"
+- Implement large circular capture button at bottom center
+- Flash toggle button (top right corner)
+- Close/back button (top left corner)
+- After capture: show preview with crop tool using expo-image-manipulator
+- "Retake" and "Use This Photo" buttons on preview screen
+- Process image: crop, enhance contrast, resize if needed (max 5MB)
+- Convert to base64 JPEG format
+- Send to Claude API with image in base64
+
+Document Frame Overlay (ScanOverlay.js):
+- Semi-transparent dark background
+- White/green rectangle frame in center
+- Rounded corners with accent marks
+- Animated breathing effect (subtle scale pulse)
+- Turn green when document appears aligned
+
+Image Processing Flow:
+1. Capture from camera
+2. Use expo-image-manipulator to crop to document area
+3. Enhance contrast for better OCR
+4. Resize if larger than 5MB
+5. Convert to base64 JPEG
+6. Send to Claude API
+
+HUMAN-IN-LOOP DESIGN:
+- AI assists understanding, humans make all health decisions
+- Clear handoff points: "Consult your doctor about..."
+- Never replace healthcare provider judgment
+- Display confidence scores (users know when to seek clarification)
+- Prominent disclaimers on every screen
+- "This is educational only, not medical advice" messaging
+- Handle AI/human disagreement: Always defer to healthcare provider
+
+UI/UX DESIGN:
+- React Native Paper components throughout
+- Color scheme:
+  * Primary: Medical blue (#2196F3)
+  * Confidence high: Green (#4CAF50)
+  * Confidence medium: Amber (#FFC107)
+  * Confidence low/urgent: Red (#F44336)
+- Typography: Minimum 16px body text, 24px headers
+- Accessibility:
+  * WCAG AA contrast ratios
+  * Screen reader labels on all interactive elements
+  * Touch targets minimum 48x48 dp
+- Loading states: Use ActivityIndicator with meaningful messages
+- Error states: Friendly messages with actionable solutions
+- Smooth page transitions with react-navigation
+- Bottom tab navigation for main screens
+
+ERROR HANDLING:
+- Camera permission denied → "MedClarify needs camera access to scan documents. Tap here to open Settings."
+- Network error → "Unable to connect. Please check your internet connection and try again."
+- Claude API error → "Translation service temporarily unavailable. Please try again in a moment."
+- Low confidence → Warning badge: "This section may need verification with your doctor"
+- Invalid document → "Unable to read this document clearly. Try retaking with better lighting."
+- Rate limit → "Please wait a moment before processing another document."
+
+SCREENS FLOW:
+1. HomeScreen → Choose scan or upload
+2. CameraScanScreen → Capture document → Preview/crop
+3. Processing overlay → "Analyzing document..."
+4. TranslationScreen → View results → Tap "Ask Questions"
+5. QAScreen → Chat interface for clarifications
+
+DEPENDENCIES:
+Install these packages:
+- expo (SDK 51)
+- react-native-paper
+- expo-camera
+- expo-document-picker
+- expo-image-picker
+- expo-image-manipulator
+- expo-file-system
+- @react-navigation/native
+- @react-navigation/stack
+- react-native-gesture-handler
+- react-native-safe-area-context
+
+Initialize with: npx create-expo-app MedClarify --template blank
+
+DELIVERABLES:
+1. Complete working Expo app with all screens implemented
+2. Camera scanning with document detection
+3. File upload for PDFs and images
+4. Claude API integration for translation and Q&A
+5. All trust & safety features (disclaimers, confidence scores, guardrails)
+6. Proper error handling and loading states
+7. README.md with setup instructions and API key configuration
+8. Clean, production-ready code with comments
+9. Sample medical documents for testing
+
+Create all files with production-quality code. Include proper error boundaries, loading states, and user feedback. Make it ready for a hackathon demo with polished UI and smooth UX. Focus on the human-in-loop design principle where AI augments human understanding but never replaces medical professional judgment.
