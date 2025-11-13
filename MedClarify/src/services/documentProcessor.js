@@ -1,6 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { processImageForAPI, isImageFile, isPDFFile } from '../utils/imageUtils';
 import { translateDocument, translateDocumentFromImage } from './claudeAPI';
 
@@ -46,7 +46,7 @@ export const pickImageFromGallery = async () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 1,
       base64: false,

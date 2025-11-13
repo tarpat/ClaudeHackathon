@@ -58,36 +58,36 @@ const CameraScanner = ({ onCapture, onClose }) => {
         style={styles.camera}
         ref={cameraRef}
         enableTorch={flashEnabled}
-      >
-        {/* Scan overlay */}
-        <ScanOverlay isAligned={isAligned} />
+      />
 
-        {/* Top controls */}
-        <View style={styles.topControls}>
-          <IconButton
-            icon="close"
-            iconColor="#FFFFFF"
-            size={32}
-            onPress={onClose}
-            style={styles.closeButton}
-          />
+      {/* Scan overlay - positioned absolutely on top of camera */}
+      <ScanOverlay isAligned={isAligned} />
 
-          <IconButton
-            icon={flashEnabled ? 'flash' : 'flash-off'}
-            iconColor="#FFFFFF"
-            size={32}
-            onPress={toggleFlash}
-            style={styles.flashButton}
-          />
-        </View>
+      {/* Top controls - positioned absolutely on top of camera */}
+      <View style={styles.topControls}>
+        <IconButton
+          icon="close"
+          iconColor="#FFFFFF"
+          size={32}
+          onPress={onClose}
+          style={styles.closeButton}
+        />
 
-        {/* Bottom capture button */}
-        <View style={styles.bottomControls}>
-          <TouchableOpacity onPress={handleCapture} style={styles.captureButton}>
-            <View style={styles.captureButtonInner} />
-          </TouchableOpacity>
-        </View>
-      </CameraView>
+        <IconButton
+          icon={flashEnabled ? 'flash' : 'flash-off'}
+          iconColor="#FFFFFF"
+          size={32}
+          onPress={toggleFlash}
+          style={styles.flashButton}
+        />
+      </View>
+
+      {/* Bottom capture button - positioned absolutely on top of camera */}
+      <View style={styles.bottomControls}>
+        <TouchableOpacity onPress={handleCapture} style={styles.captureButton}>
+          <View style={styles.captureButtonInner} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

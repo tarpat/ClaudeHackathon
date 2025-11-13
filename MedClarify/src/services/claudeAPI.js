@@ -16,6 +16,42 @@ const getApiKey = () => {
 };
 
 /**
+ * Extracts and parses JSON from Claude's response
+ * Handles cases where JSON is wrapped in markdown code blocks or has extra text
+ * @param {string} responseText - The response text from Claude
+ * @returns {object} Parsed JSON object
+ */
+const extractJSON = (responseText) => {
+  // Try to parse directly first
+  try {
+    return JSON.parse(responseText);
+  } catch (e) {
+    // If direct parse fails, try to extract JSON from markdown code blocks
+    const jsonBlockMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonBlockMatch) {
+      try {
+        return JSON.parse(jsonBlockMatch[1]);
+      } catch (e2) {
+        // Continue to next method
+      }
+    }
+
+    // Try to find JSON object in the text (looking for { ... })
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch (e3) {
+        // Continue to next method
+      }
+    }
+
+    // If all else fails, throw the original error
+    throw new Error('Unable to extract valid JSON from response: ' + responseText.substring(0, 200));
+  }
+};
+
+/**
  * Makes a request to the Claude API with retry logic
  * @param {object} requestBody - The API request body
  * @param {number} retries - Number of retries remaining
@@ -83,8 +119,8 @@ export const translateDocument = async (text) => {
     // Extract the response text
     const responseText = response.content[0].text;
 
-    // Parse JSON response
-    const parsedData = JSON.parse(responseText);
+    // Parse JSON response (handles markdown code blocks and extra text)
+    const parsedData = extractJSON(responseText);
 
     return {
       success: true,
@@ -125,7 +161,7 @@ export const translateDocumentFromImage = async (base64Image, mediaType = 'image
             },
             {
               type: 'text',
-              text: 'Please extract all text from this medical document and translate it to plain language following the JSON format specified.',
+              text: 'Please extract all text from this medical document and translate it to plain language following the JSON format specified. Return ONLY valid JSON without any additional text or markdown formatting.',
             },
           ],
         },
@@ -137,8 +173,8 @@ export const translateDocumentFromImage = async (base64Image, mediaType = 'image
     // Extract the response text
     const responseText = response.content[0].text;
 
-    // Parse JSON response
-    const parsedData = JSON.parse(responseText);
+    // Parse JSON response (handles markdown code blocks and extra text)
+    const parsedData = extractJSON(responseText);
 
     return {
       success: true,
